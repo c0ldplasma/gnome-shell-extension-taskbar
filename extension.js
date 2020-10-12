@@ -1055,7 +1055,9 @@ TaskBar.prototype = {
 				("position-appview-button"),
 				("position-favorites")
 			];
-		        let boxOuter = this.boxLeft;
+		        let boxOuter = this.boxMain;
+			if (this.settings.get_boolean("bottom-panel"))
+			    boxOuter = this.boxLeft;
 			for (let i = 0; i <= 4; i++) {
 				this.appearances.forEach(
 					function(appearance) {
@@ -1064,7 +1066,8 @@ TaskBar.prototype = {
 							if ((appearance === "position-tasks") && (this.settings.get_boolean("display-tasks")))
 						        {
 								this.boxMain.add_actor(this.boxMainTasks);
-							        boxOuter = this.boxRight;
+							        if (this.settings.get_boolean("bottom-panel"))
+							            boxOuter = this.boxRight;
 							}
 							else if ((appearance === "position-desktop-button") && (this.settings.get_boolean("display-desktop-button")))
 								boxOuter.add_actor(this.boxMainDesktopButton);
