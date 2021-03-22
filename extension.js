@@ -108,6 +108,8 @@ TaskBar.prototype = {
 	boxMainTasksId: null,
 	boxMainTasks: null,
 	boxMainWorkspaceButton: null,
+	boxLeft: null,
+	boxRight: null,
 	boxShowApps: null,
 	boxTray: null,
 	boxWorkspace: null,
@@ -583,6 +585,10 @@ TaskBar.prototype = {
 		}
 		if (this.boxMain !== null)
 			this.boxMain = null;
+		if (this.boxLeft !== null)
+			this.boxLeft = null;
+		if (this.boxRight !== null)
+			this.boxRight = null;
 		if (this.mainBox !== null)
 			this.mainBox = null;
 		this.cleanTasksList();
@@ -777,6 +783,12 @@ TaskBar.prototype = {
 			(this.settings.get_boolean("display-favorites"))) {
 			this.setTaskBar = true;
 			this.boxMain = new St.BoxLayout({
+				style_class: "tkb-box"
+			});
+			this.boxLeft = new St.BoxLayout({
+				style_class: "tkb-box"
+			});
+			this.boxRight = new St.BoxLayout({
 				style_class: "tkb-box"
 			});
 			if (this.settings.get_boolean("display-favorites"))
@@ -1043,21 +1055,28 @@ TaskBar.prototype = {
 				("position-appview-button"),
 				("position-favorites")
 			];
+		        let boxOuter = this.boxMain;
+			if (this.settings.get_boolean("bottom-panel"))
+			    boxOuter = this.boxLeft;
 			for (let i = 0; i <= 4; i++) {
 				this.appearances.forEach(
 					function(appearance) {
 						let positionAppearance = this.settings.get_int(appearance);
 						if (positionAppearance === i) {
 							if ((appearance === "position-tasks") && (this.settings.get_boolean("display-tasks")))
+						        {
 								this.boxMain.add_actor(this.boxMainTasks);
+							        if (this.settings.get_boolean("bottom-panel"))
+							            boxOuter = this.boxRight;
+							}
 							else if ((appearance === "position-desktop-button") && (this.settings.get_boolean("display-desktop-button")))
-								this.boxMain.add_actor(this.boxMainDesktopButton);
+								boxOuter.add_actor(this.boxMainDesktopButton);
 							else if ((appearance === "position-workspace-button") && (this.settings.get_boolean("display-workspace-button")))
-								this.boxMain.add_actor(this.boxMainWorkspaceButton);
+								boxOuter.add_actor(this.boxMainWorkspaceButton);
 							else if ((appearance === "position-appview-button") && (this.settings.get_boolean("display-showapps-button")))
-								this.boxMain.add_actor(this.boxMainShowAppsButton);
+								boxOuter.add_actor(this.boxMainShowAppsButton);
 							else if ((appearance === "position-favorites") && (this.settings.get_boolean("display-favorites")))
-								this.boxMain.add_actor(this.boxMainFavorites);
+								boxOuter.add_actor(this.boxMainFavorites);
 						}
 					},
 					this
@@ -1624,15 +1643,16 @@ TaskBar.prototype = {
 		});
 		this.bottomPanelActor.set_style(this.fontSize + ' ' + this.bottomPanelBackgroundStyle);
 		this.bottomPanelActor.set_reactive(false);
-		this.positionBoxBottomStart = new St.Bin({
+		this.positionBoxBottomStart = new St.BoxLayout({
 		});
 		this.positionBoxBottomMiddle = new St.Bin({
 			x_expand: true,
 			x_align: St.Align.END
 		});
-		this.positionBoxBottomEnd = new St.Bin({
+		this.positionBoxBottomEnd = new St.BoxLayout({
 		});
 		this.positionBoxBottomSettings = this.settings.get_int("position-bottom-box");
+	        this.positionBoxBottomStart.add_actor(this.boxLeft);
 		if (this.positionBoxBottomSettings === 0)
 			this.positionBoxBottomStart.add_actor(this.boxMain);
 		else if (this.positionBoxBottomSettings === 1)
@@ -1641,6 +1661,7 @@ TaskBar.prototype = {
 			this.positionBoxBottomEnd.add_actor(this.boxMain);
 			this.bottomPanelEndIndicator = true;
 		}
+	        this.positionBoxBottomEnd.add_actor(this.boxRight);
 		if ((this.settings.get_enum("tray-button") !== 0) && (!this.bottomPanelEndIndicator) && (ShellVersion[1] <= 14))
 			this.positionBoxBottomEnd.add_actor(this.boxBottomPanelTrayButton);
 		Main.layoutManager.addChrome(this.bottomPanelActor, {
